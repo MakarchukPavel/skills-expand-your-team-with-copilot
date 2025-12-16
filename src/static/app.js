@@ -478,6 +478,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const baseUrl = window.location.origin;
     // Create a URL-friendly version of the activity name
     const activityParam = encodeURIComponent(activityName);
+    // Note: This URL is designed for sharing purposes. The query parameter allows
+    // future enhancement to deep-link directly to a specific activity view.
     return `${baseUrl}?activity=${activityParam}`;
   }
 
@@ -514,18 +516,41 @@ document.addEventListener("DOMContentLoaded", () => {
     const subject = `Check out ${name} at Mergington High School`;
     const body = getShareText(name, details);
     const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoUrl;
+    // Use a temporary anchor element to avoid navigating away from the page
+    const link = document.createElement('a');
+    link.href = mailtoUrl;
+    link.click();
   }
 
   // Function to copy activity link to clipboard
   function copyActivityLink(name) {
     const url = getActivityShareUrl(name);
-    navigator.clipboard.writeText(url).then(() => {
-      showMessage('Link copied to clipboard!', 'success');
-    }).catch(err => {
-      console.error('Failed to copy link:', err);
-      showMessage('Failed to copy link', 'error');
-    });
+    
+    // Check if clipboard API is available
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        showMessage('Link copied to clipboard!', 'success');
+      }).catch(err => {
+        console.error('Failed to copy link:', err);
+        showMessage('Failed to copy link', 'error');
+      });
+    } else {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showMessage('Link copied to clipboard!', 'success');
+      } catch (err) {
+        console.error('Fallback: Failed to copy link:', err);
+        showMessage('Failed to copy link', 'error');
+      }
+      document.body.removeChild(textArea);
+    }
   }
 
   // Function to render a single activity card
