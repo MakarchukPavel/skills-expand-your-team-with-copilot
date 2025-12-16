@@ -26,6 +26,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
 
+  // Dark mode elements
+  const darkModeToggle = document.getElementById("dark-mode-toggle");
+  const themeIcon = darkModeToggle ? darkModeToggle.querySelector(".theme-icon") : null;
+
   // Activity categories with corresponding colors
   const activityTypes = {
     sports: { label: "Sports", color: "#e8f5e9", textColor: "#2e7d32" },
@@ -45,6 +49,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Authentication state
   let currentUser = null;
+
+  // Dark mode functions
+  function initializeDarkMode() {
+    if (!darkModeToggle || !themeIcon) return;
+    
+    // Check if user has a saved preference
+    const savedTheme = localStorage.getItem("theme");
+    
+    // If there's a saved preference for dark mode, enable it
+    if (savedTheme === "dark") {
+      enableDarkMode();
+    } else {
+      // Default to light mode (no need to call disableDarkMode)
+      themeIcon.textContent = "🌙";
+    }
+  }
+
+  function enableDarkMode() {
+    if (!themeIcon) return;
+    document.body.classList.add("dark-mode");
+    themeIcon.textContent = "☀️";
+    localStorage.setItem("theme", "dark");
+  }
+
+  function disableDarkMode() {
+    if (!themeIcon) return;
+    document.body.classList.remove("dark-mode");
+    themeIcon.textContent = "🌙";
+    localStorage.setItem("theme", "light");
+  }
+
+  function toggleDarkMode() {
+    if (document.body.classList.contains("dark-mode")) {
+      disableDarkMode();
+    } else {
+      enableDarkMode();
+    }
+  }
+
+  // Dark mode toggle event listener
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener("click", toggleDarkMode);
+  }
 
   // Time range mappings for the dropdown
   const timeRanges = {
@@ -1037,6 +1084,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Initialize app
+  initializeDarkMode();
   checkAuthentication();
   initializeFilters();
   fetchActivities();
